@@ -1,0 +1,555 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>Bharat News Vault</title>
+
+<link rel="icon" type="image/png" href="icon.png">
+<link rel="apple-touch-icon" href="icon.png">
+
+<style>
+:root{
+  --primary:#1f3c88;
+  --bg:#f1f5f9;
+  --card:#ffffff;
+  --text:#0f172a;
+  --muted:#64748b;
+  --breaking:#dc2626;
+}
+
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+body{
+  margin:0;
+  font-family:system-ui,-apple-system;
+  background:var(--bg);
+  color:var(--text);
+}
+
+/* ================= SPLASH ================= */
+#splash{
+  position:fixed;
+  inset:0;
+  background:linear-gradient(180deg,#1f3c88,#0f245e);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  z-index:9999;
+}
+#splash.hide{
+  opacity:0;
+  transition:opacity .6s ease;
+  pointer-events:none;
+}
+.splash-box{
+  text-align:center;
+  color:#fff;
+}
+.earth{
+  width:120px;
+  height:120px;
+  border-radius:50%;
+  margin:0 auto 18px;
+  background:radial-gradient(circle at 30% 30%,#4fd1c5,#1e40af 60%,#0f172a);
+  box-shadow:
+    inset -10px -10px 20px rgba(0,0,0,.35),
+    inset 8px 8px 20px rgba(255,255,255,.15),
+    0 10px 30px rgba(0,0,0,.4);
+  animation:spin 6s linear infinite;
+}
+@keyframes spin{to{transform:rotate(360deg)}}
+.splash-box h1{margin:0;font-size:22px;font-weight:700;}
+.splash-box p{margin-top:6px;font-size:13px;opacity:.85}
+
+/* ================= HEADER ================= */
+header{
+  background:var(--primary);
+  color:#fff;
+  padding:12px 14px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  position:sticky;
+  top:0;
+  z-index:100;
+}
+header h1{margin:0;font-size:18px;font-weight:700;}
+.header-actions span{
+  font-size:20px;
+  margin-left:16px;
+  cursor:pointer;
+}
+
+/* ================= TABS ================= */
+.tabs{
+  display:flex;
+  overflow-x:auto;
+  background:#fff;
+  border-bottom:1px solid #e2e8f0;
+  position:sticky;
+  top:48px;
+  z-index:90;
+}
+.tab{
+  padding:14px 18px;
+  white-space:nowrap;
+  color:var(--muted);
+}
+.tab.active{
+  color:var(--primary);
+  font-weight:700;
+  border-bottom:3px solid var(--primary);
+}
+
+/* ================= CONTROLS ================= */
+.controls{
+  display:flex;
+  gap:10px;
+  padding:12px;
+  background:#fff;
+  border-bottom:1px solid #e2e8f0;
+}
+select,input{
+  padding:10px;
+  border-radius:10px;
+  border:1px solid #cbd5e1;
+  font-size:14px;
+}
+input{flex-grow:1}
+
+/* ================= NEWS ================= */
+#news{
+  padding:12px;
+  display:grid;
+  gap:12px;
+  min-height:100vh;
+  overflow-y:auto;
+  -webkit-overflow-scrolling:touch;
+}
+.card{
+  background:var(--card);
+  border-radius:16px;
+  padding:14px;
+  box-shadow:0 2px 8px rgba(0,0,0,.06);
+  border:1px solid #edf2f7;
+  position:relative;
+}
+.card.read{opacity:.6}
+.card img{
+  width:100%;
+  height:180px;
+  object-fit:cover;
+  border-radius:12px;
+  margin-bottom:10px;
+}
+.badge{
+  position:absolute;
+  top:12px;
+  left:12px;
+  background:var(--breaking);
+  color:#fff;
+  font-size:10px;
+  font-weight:700;
+  padding:4px 8px;
+  border-radius:999px;
+}
+.card h3{margin:0 0 6px;font-size:16px;}
+.card p{margin:0;font-size:13px;color:var(--muted);}
+.meta{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin-top:10px;
+  font-size:11px;
+  font-weight:700;
+  color:var(--primary);
+}
+.actions{
+  display:flex;
+  gap:14px;
+  font-size:18px;
+}
+
+/* ================= MODALS ================= */
+.modal{
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,.6);
+  display:none;
+  align-items:center;
+  justify-content:center;
+  z-index:1000;
+}
+.modal-box{
+  background:#fff;
+  border-radius:20px;
+  padding:20px;
+  width:100%;
+  max-width:340px;
+}
+.ep-item{
+  padding:14px;
+  border-radius:12px;
+  background:#f8fafc;
+  margin-bottom:10px;
+  font-weight:600;
+  text-align:center;
+  border:1px solid #e2e8f0;
+}
+.center{
+  text-align:center;
+  padding:60px 20px;
+  color:var(--muted);
+}
+</style>
+</head>
+
+<body>
+
+<!-- ================= SPLASH ================= -->
+<div id="splash">
+  <div class="splash-box">
+    <div class="earth"></div>
+    <h1>Bharat News Vault</h1>
+    <p>India’s News, One Vault</p>
+  </div>
+</div>
+
+<header>
+  <h1>Bharat News Vault</h1>
+  <div class="header-actions">
+    <span onclick="searchInput.focus()">🔍</span>
+    <span onclick="openBookmarks()">⭐</span>
+    <span onclick="openEpaper()">📰</span>
+  </div>
+</header>
+
+<div class="tabs">
+  <div class="tab active" data-cat="top">Top</div>
+  <div class="tab" data-cat="trending">Trending</div>
+  <div class="tab" data-cat="national">National</div>
+  <div class="tab" data-cat="international">International</div>
+  <div class="tab" data-cat="bollywood">Bollywood</div>
+  <div class="tab" data-cat="sports">Sports</div>
+</div>
+
+<div class="controls">
+  <select id="language"></select>
+  <input id="searchInput" placeholder="Search news...">
+</div>
+
+<div id="news">
+  <div class="center">Loading news...</div>
+</div>
+
+<!-- ================= EPAPER MODAL ================= -->
+<div class="modal" id="epaperModal">
+  <div class="modal-box">
+    <h3>E-Papers</h3>
+    <div class="ep-item" onclick="openPaper('https://epaper.lokmat.com')">Lokmat</div>
+    <div class="ep-item" onclick="openPaper('https://epaper.esakal.com')">Sakal</div>
+    <div class="ep-item" onclick="openPaper('https://epaper.thehindu.com')">The Hindu</div>
+    <button onclick="closeEpaper()" style="width:100%;padding:12px">Close</button>
+  </div>
+</div>
+
+<!-- ================= BOOKMARK MODAL ================= -->
+<div class="modal" id="bookmarkModal">
+  <div class="modal-box">
+    <h3>Saved Articles</h3>
+    <div id="bookmarkList"></div>
+    <button onclick="closeBookmarks()" style="width:100%;padding:12px">Close</button>
+  </div>
+</div>
+
+<script>
+/* ================= LANGUAGE AUTO DETECT ================= */
+const language=document.getElementById("language");
+const deviceLang=
+  navigator.language.startsWith("mr")?"mr":
+  navigator.language.startsWith("hi")?"hi":"en";
+
+["mr","hi","en"].forEach(l=>{
+  const o=document.createElement("option");
+  o.value=l;
+  o.text=l.toUpperCase();
+  if(l===deviceLang) o.selected=true;
+  language.appendChild(o);
+});
+
+/* ================= STORAGE ================= */
+let readSet=new Set(JSON.parse(localStorage.getItem("read")||"[]"));
+let bookmarks=JSON.parse(localStorage.getItem("bookmarks")||"[]");
+
+/* ================= API CONFIG ================= */
+const GNEWS_KEYS=[
+  "bb8d3244fa70cf565640a6021a4b37a3",
+  "c9aecf46e71d9ea8e890e733b8c5a8ec",
+  "6b732f21a4a1b541c42ec1a768bf2da1"
+];
+const NEWSDATA_KEYS=[
+  "pub_641f24278ebc4b7689fbe53bb3123d89",
+  "pub_d3bcad6b821d47c49de985fee03c99e5",
+  "pub_5c8095c4c7b648eb8f702d76eb36c017",
+  "pub_ad5eac52436e4b7296b8dbcf10b69cc3"
+];
+
+const CAT_G={top:"general",national:"nation",international:"world",bollywood:"entertainment",sports:"sports"};
+const CAT_N={top:"top",national:"politics",international:"world",bollywood:"entertainment",sports:"sports"};
+
+let currentCategory="top";
+let searchTimeout;
+
+/* ================= DAILY RESET ================= */
+const TODAY=new Date().toISOString().slice(0,10);
+if(localStorage.getItem("api_day")!==TODAY){
+  localStorage.setItem("api_day",TODAY);
+  localStorage.setItem("gI","0");
+  localStorage.setItem("nI","0");
+}
+let gI=parseInt(localStorage.getItem("gI")||"0",10);
+let nI=parseInt(localStorage.getItem("nI")||"0",10);
+
+/* ================= CACHE ================= */
+const TTL=86400000;
+function cacheKey(e,c,l,q){
+  return `news_${e}_${c}_${l}_${q||"top"}`;
+}
+function getCache(k){
+  const r=localStorage.getItem(k);
+  if(!r) return null;
+  const o=JSON.parse(r);
+  if(Date.now()-o.t>TTL){
+    localStorage.removeItem(k);
+    return null;
+  }
+  return o.d;
+}
+function setCache(k,d){
+  localStorage.setItem(k,JSON.stringify({t:Date.now(),d}));
+}
+/* ================= LOAD NEWS ================= */
+async function loadNews(reset=false,force=false){
+  if(reset){
+    news.innerHTML='<div class="center">Refreshing news...</div>';
+  }
+  const q=searchInput.value.trim();
+  const l=language.value;
+
+  let data=[];
+  if(currentCategory==="trending"){
+    data=buildTrending();
+  }else{
+    data=await gnews(q,l,force);
+    if(!data.length) data=await newsdata(q,l,force);
+  }
+  render(data);
+}
+
+/* ================= GNEWS ================= */
+async function gnews(q,l,force){
+  const key=cacheKey("g",currentCategory,l,q);
+  if(!force){
+    const cached=getCache(key);
+    if(cached) return cached;
+  }
+
+  const url=q
+    ?`https://gnews.io/api/v4/search?q=${encodeURIComponent(q)}&lang=${l}&country=in&token=${GNEWS_KEYS[gI]}`
+    :`https://gnews.io/api/v4/top-headlines?category=${CAT_G[currentCategory]}&lang=${l}&country=in&token=${GNEWS_KEYS[gI]}`;
+
+  try{
+    const r=await fetch(url);
+    const d=await r.json();
+    if(r.status>=400) throw 0;
+
+    const arr=(d.articles||[]).map(a=>({
+      title:a.title,
+      desc:a.description,
+      url:a.url,
+      img:a.image,
+      src:a.source.name,
+      time:a.publishedAt
+    }));
+
+    setCache(key,arr);
+    return arr;
+  }catch{
+    if(gI<GNEWS_KEYS.length-1){
+      gI++;
+      localStorage.setItem("gI",gI);
+      return gnews(q,l,force);
+    }
+    return [];
+  }
+}
+
+/* ================= NEWSDATA ================= */
+async function newsdata(q,l,force){
+  const key=cacheKey("n",currentCategory,l,q);
+  if(!force){
+    const cached=getCache(key);
+    if(cached) return cached;
+  }
+
+  const url=q
+    ?`https://newsdata.io/api/1/news?apikey=${NEWSDATA_KEYS[nI]}&q=${encodeURIComponent(q)}&language=${l}&country=in`
+    :`https://newsdata.io/api/1/news?apikey=${NEWSDATA_KEYS[nI]}&category=${CAT_N[currentCategory]}&language=${l}&country=in`;
+
+  try{
+    const r=await fetch(url);
+    const d=await r.json();
+    if(d.status==="error") throw 0;
+
+    const arr=(d.results||[]).map(a=>({
+      title:a.title,
+      desc:a.description,
+      url:a.link,
+      img:a.image_url,
+      src:a.source_id,
+      time:a.pubDate
+    }));
+
+    setCache(key,arr);
+    return arr;
+  }catch{
+    if(nI<NEWSDATA_KEYS.length-1){
+      nI++;
+      localStorage.setItem("nI",nI);
+      return newsdata(q,l,force);
+    }
+    return [];
+  }
+}
+
+/* ================= TRENDING ================= */
+function buildTrending(){
+  const all=[];
+  Object.keys(localStorage).forEach(k=>{
+    if(k.startsWith("news_")){
+      const d=getCache(k);
+      if(Array.isArray(d)) all.push(...d);
+    }
+  });
+  const map={};
+  all.forEach(a=>{
+    const key=a.title.slice(0,40);
+    map[key]=(map[key]||0)+1;
+  });
+  return all
+    .sort((a,b)=>(map[b.title.slice(0,40)]||0)-(map[a.title.slice(0,40)]||0))
+    .slice(0,10);
+}
+
+/* ================= RENDER ================= */
+function render(list){
+  if(!list.length){
+    news.innerHTML='<div class="center">No news available</div>';
+    return;
+  }
+  news.innerHTML=list.map((a,i)=>`
+    <div class="card ${readSet.has(a.url)?'read':''}" onclick="markRead('${a.url}')">
+      ${(i<3 && currentCategory==="top")?'<div class="badge">BREAKING</div>':''}
+      ${a.img?`<img src="${a.img}" loading="lazy">`:''}
+      <h3>${a.title}</h3>
+      <p>${a.desc||""}</p>
+      <div class="meta">
+        <span>${a.src||""}</span>
+        <div class="actions">
+          <span onclick="event.stopPropagation();share('${a.url}')">📤</span>
+          <span onclick="event.stopPropagation();toggleBookmark('${a.url}')">⭐</span>
+        </div>
+      </div>
+    </div>
+  `).join("");
+}
+
+/* ================= READ ================= */
+function markRead(url){
+  readSet.add(url);
+  localStorage.setItem("read",JSON.stringify([...readSet]));
+  window.open(url,"_blank");
+}
+
+/* ================= SHARE ================= */
+function share(url){
+  if(navigator.share){
+    navigator.share({url});
+  }else{
+    navigator.clipboard.writeText(url);
+    alert("Link copied");
+  }
+}
+
+/* ================= BOOKMARK ================= */
+function toggleBookmark(url){
+  const idx=bookmarks.findIndex(b=>b.url===url);
+  if(idx>=0){
+    bookmarks.splice(idx,1);
+  }else{
+    const a=[...document.querySelectorAll(".card")].find(c=>c.onclick.toString().includes(url));
+    bookmarks.push({url,title:a?.querySelector("h3")?.innerText||url});
+  }
+  localStorage.setItem("bookmarks",JSON.stringify(bookmarks));
+}
+function openBookmarks(){
+  bookmarkList.innerHTML=bookmarks.length
+    ?bookmarks.map(b=>`<div class="ep-item" onclick="window.open('${b.url}','_blank')">${b.title}</div>`).join("")
+    :"No saved articles";
+  bookmarkModal.style.display="flex";
+}
+function closeBookmarks(){bookmarkModal.style.display="none";}
+
+/* ================= EVENTS ================= */
+document.querySelectorAll(".tab").forEach(t=>{
+  t.onclick=()=>{
+    document.querySelector(".tab.active").classList.remove("active");
+    t.classList.add("active");
+    currentCategory=t.dataset.cat;
+    loadNews(true,false);
+  };
+});
+
+searchInput.oninput=()=>{
+  clearTimeout(searchTimeout);
+  searchTimeout=setTimeout(()=>loadNews(true,false),800);
+};
+
+language.onchange=()=>loadNews(true,false);
+
+function openEpaper(){epaperModal.style.display="flex";}
+function closeEpaper(){epaperModal.style.display="none";}
+function openPaper(u){window.open(u,"_blank");closeEpaper();}
+
+/* ================= STRICT PULL TO REFRESH ================= */
+let startY=0,canRefresh=false,isScrolling=false;
+
+news.addEventListener("scroll",()=>{
+  isScrolling=true;
+  clearTimeout(news._t);
+  news._t=setTimeout(()=>isScrolling=false,150);
+},{passive:true});
+
+news.addEventListener("touchstart",e=>{
+  startY=e.touches[0].clientY;
+  canRefresh=(news.scrollTop===0 && !isScrolling);
+},{passive:true});
+
+news.addEventListener("touchend",e=>{
+  if(canRefresh && e.changedTouches[0].clientY-startY>150){
+    loadNews(true,true);
+  }
+  canRefresh=false;
+},{passive:true});
+
+/* ================= INIT ================= */
+window.addEventListener("load",()=>{
+  loadNews();
+  setTimeout(()=>{
+    document.getElementById("splash").classList.add("hide");
+  },5000);
+});
+</script>
+
+</body>
+</html>

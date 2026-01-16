@@ -1,0 +1,6 @@
+{
+  "appId": "com.bharatnews.app",
+  "appName": "BHARAT NEWS",
+  "webDir": "web",
+  "bundledWebRuntime": false
+}
